@@ -153,8 +153,136 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ---
 
-## 📁 File Referensi
-
 - [HospitalRoom.sol](file:///C:/Users/Windows/sct/hospital-dapp/contracts/HospitalRoom.sol)
 - [deploy.js](file:///C:/Users/Windows/sct/hospital-dapp/scripts/deploy.js)
 - [hardhat.config.js](file:///C:/Users/Windows/sct/hospital-dapp/hardhat.config.js)
+
+---
+
+## 🗺️ Dokumentasi Arsitektur Sistem
+
+### Diagram Alir: Input → Proses → Output
+
+```mermaid
+flowchart TD
+    %% ── AKTOR ───────────────────────────────────────────────
+    Pasien(["👤 Pasien / Masyarakat\n(Publik — tanpa wallet)"])
+    AdminRS(["🏥 Staf Rumah Sakit\n(Wallet Terdaftar)"])
+    AdminPusat(["🔑 Admin Pusat / Owner\n(Deployer Contract)"])
+    Frontend["🖥️ Frontend\n(React + Ethers.js v6)"]
+    SC["⛓️ Smart Contract\nHospitalRoom.sol"]
+    Blockchain[("📦 Blockchain\nHardhat Local Node")]
+
+    %% ── ALUR ADMIN PUSAT ─────────────────────────────────────
+    subgraph INPUT_OWNER ["INPUT — Admin Pusat"]
+        AdminPusat -->|"1. Input: address wallet RS\n+ nama rumah sakit"| Frontend
+    end
+
+    subgraph PROSES_OWNER ["PROSES — Smart Contract"]
+        Frontend -->|"2. Panggil addHospital()\nonlyOwner modifier"| SC
+        SC -->|"3. Validasi & simpan\nRoomInfo ke mapping"| Blockchain
+    end
+
+    subgraph OUTPUT_OWNER ["OUTPUT"]
+        Blockchain -->|"4. Emit HospitalAdded event\nWallet RS masuk whitelist ✅"| AdminPusat
+    end
+
+    %% ── ALUR STAF RS ─────────────────────────────────────────
+    subgraph INPUT_RS ["INPUT — Staf Rumah Sakit"]
+        AdminRS -->|"5. Input: jumlah kamar\ntersedia + total kapasitas"| Frontend
+    end
+
+    subgraph PROSES_RS ["PROSES — Smart Contract"]
+        Frontend -->|"6. Panggil updateRoomStatus()\nonlyRegisteredHospital modifier"| SC
+        SC -->|"7. Update RoomInfo\ndi blockchain"| Blockchain
+    end
+
+    subgraph OUTPUT_RS ["OUTPUT"]
+        Blockchain -->|"8. Emit RoomStatusUpdated event\nData kamar diperbarui on-chain ✅"| AdminRS
+    end
+
+    %% ── ALUR PASIEN ──────────────────────────────────────────
+    subgraph INPUT_PASIEN ["INPUT — Pasien (Publik)"]
+        Pasien -->|"9. Input: wallet address RS\nyang ingin dilihat"| Frontend
+    end
+
+    subgraph PROSES_PASIEN ["PROSES — Read-Only"]
+        Frontend -->|"10. Panggil getRoomStatus()\nview function — GRATIS"| SC
+        SC -->|"11. Baca data dari\nmapping on-chain"| Blockchain
+    end
+
+    subgraph OUTPUT_PASIEN ["OUTPUT — Tampilan Dashboard"]
+        Blockchain -->|"12. Return: nama, tersedia,\ntotal, isFull, lastUpdated"| Frontend
+        Frontend -->|"13. Render badge:\n🟢 TERSEDIA / 🔴 PENUH"| Pasien
+    end
+
+    %% ── STYLING ──────────────────────────────────────────────
+    style INPUT_OWNER  fill:#fef3c7,stroke:#f59e0b,color:#000
+    style PROSES_OWNER fill:#dbeafe,stroke:#3b82f6,color:#000
+    style OUTPUT_OWNER fill:#dcfce7,stroke:#22c55e,color:#000
+    style INPUT_RS     fill:#fef3c7,stroke:#f59e0b,color:#000
+    style PROSES_RS    fill:#dbeafe,stroke:#3b82f6,color:#000
+    style OUTPUT_RS    fill:#dcfce7,stroke:#22c55e,color:#000
+    style INPUT_PASIEN  fill:#fef3c7,stroke:#f59e0b,color:#000
+    style PROSES_PASIEN fill:#dbeafe,stroke:#3b82f6,color:#000
+    style OUTPUT_PASIEN fill:#dcfce7,stroke:#22c55e,color:#000
+    style SC           fill:#6366f1,stroke:#4338ca,color:#fff
+    style Blockchain   fill:#1e293b,stroke:#475569,color:#fff
+    style Frontend     fill:#0d9488,stroke:#0f766e,color:#fff
+```
+
+---
+
+### Tabel Cara Kerja Program — Berdasarkan Peran
+
+#### 👥 Peran: PUBLIK (Pasien / Masyarakat)
+
+| Langkah | Aktor | Aksi | Layer | Fungsi Kontrak | Output |
+|--------:|-------|------|-------|---------------|--------|
+| 1 | Pasien | Membuka `localhost:5173` di browser | Frontend | — | Halaman Dashboard Publik tampil |
+| 2 | Pasien | Melihat daftar RS terdaftar secara otomatis | Frontend → SC | `getAllHospitals()` | Tombol address RS muncul |
+| 3 | Pasien | Klik tombol address RS **atau** ketik address manual | Frontend | — | Input address terisi |
+| 4 | Pasien | Klik tombol **🔍 Cari** | Frontend | — | Request dikirim ke blockchain |
+| 5 | — | Frontend memanggil kontrak (read-only, tanpa wallet) | Ethers.js → SC | `getRoomStatus(address)` | Data kamar dikembalikan |
+| 6 | — | Smart contract membaca `RoomInfo` dari `mapping` | Blockchain | — | Return: nama, tersedia, total, isFull |
+| 7 | Pasien | Melihat kartu status kamar | Frontend | — | Badge **🟢 TERSEDIA** atau **🔴 PENUH** |
+| 8 | — | Dashboard auto-refresh setiap 15 detik | Frontend | `getRoomStatus()` | Data selalu terkini tanpa reload manual |
+
+> **Biaya:** Rp 0 / $0 — fungsi `view` tidak memerlukan gas. Tidak perlu wallet, tidak perlu akun.
+
+---
+
+#### 🔑 Peran: ADMIN PUSAT (Owner / Deployer Contract)
+
+| Langkah | Aktor | Aksi | Layer | Fungsi Kontrak | Output |
+|--------:|-------|------|-------|---------------|--------|
+| 1 | Admin Pusat | Buka Hardhat Console atau Panel Admin | Terminal / Frontend | — | Koneksi ke node lokal |
+| 2 | Admin Pusat | Siapkan address wallet RS yang akan didaftarkan | — | — | Address: `0xWalletRS` |
+| 3 | Admin Pusat | Panggil `addHospital(address, name)` | Hardhat Console / SC | `addHospital()` | Transaksi dikirim ke blockchain |
+| 4 | — | Modifier `onlyOwner` memverifikasi caller | Smart Contract | `require(msg.sender == owner)` | Lulus ✅ atau Revert ❌ |
+| 5 | — | Data RS disimpan ke `mapping(address => RoomInfo)` | Blockchain | — | `isRegistered = true` |
+| 6 | — | Event `HospitalAdded` dipancarkan | Blockchain | `emit HospitalAdded(address, name)` | Audit trail on-chain |
+| 7 | Admin Pusat | Untuk cabut akses: panggil `removeHospital(address)` | SC | `removeHospital()` | `isRegistered = false`, data historis tetap ada |
+
+> **Catatan keamanan:** Tidak ada self-register. Hanya wallet yang sama persis dengan deployer contract (Account[0] Hardhat) yang dapat menjalankan langkah ini.
+
+---
+
+#### 🏥 Peran: STAF RUMAH SAKIT (Wallet Terdaftar)
+
+| Langkah | Aktor | Aksi | Layer | Fungsi Kontrak | Output |
+|--------:|-------|------|-------|---------------|--------|
+| 1 | Staf RS | Buka `localhost:5173` → klik tab **⚙️ Panel Admin** | Frontend | — | Halaman Panel Admin tampil |
+| 2 | Staf RS | Klik **🔗 Hubungkan MetaMask** | Frontend → MetaMask | `eth_requestAccounts` | Popup MetaMask muncul |
+| 3 | Staf RS | Pilih akun wallet yang sudah di-whitelist → konfirmasi | MetaMask | — | `connectedAddress` tersimpan di state |
+| 4 | — | Frontend otomatis cek status wallet via BrowserProvider | Ethers.js → SC | `getRoomStatus(address)` | `isRegistered` dicek |
+| 5a | — | Jika `isRegistered = true` | Frontend | — | ✅ Formulir update kamar muncul |
+| 5b | — | Jika `isRegistered = false` | Frontend | — | ❌ Pesan "Akses Ditolak" muncul |
+| 6 | Staf RS | Isi formulir: **Kamar Tersedia** + **Total Kapasitas** | Frontend | — | Validasi: tersedia ≤ total |
+| 7 | Staf RS | Klik **📡 Broadcast ke Blockchain** | Frontend → MetaMask | — | Popup konfirmasi MetaMask |
+| 8 | Staf RS | Konfirmasi transaksi di MetaMask | MetaMask | — | Transaksi ditandatangani & dikirim |
+| 9 | — | Modifier `onlyRegisteredHospital` diverifikasi on-chain | Smart Contract | `require(isRegistered[msg.sender])` | Lulus ✅ atau Revert ❌ |
+| 10 | — | Data `availableRooms`, `totalRooms`, `lastUpdated` diperbarui | Blockchain | — | State on-chain berubah |
+| 11 | — | Event `RoomStatusUpdated` dipancarkan | Blockchain | `emit RoomStatusUpdated(...)` | Audit trail permanen |
+| 12 | Staf RS | Panel Admin menampilkan tx hash konfirmasi | Frontend | — | ✅ "Status berhasil diperbarui!" |
+| 13 | Pasien | Dashboard Publik menampilkan data terbaru | Frontend → SC | `getRoomStatus()` | Badge status kamar diperbarui |
