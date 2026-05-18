@@ -286,3 +286,65 @@ flowchart TD
 | 11 | — | Event `RoomStatusUpdated` dipancarkan | Blockchain | `emit RoomStatusUpdated(...)` | Audit trail permanen |
 | 12 | Staf RS | Panel Admin menampilkan tx hash konfirmasi | Frontend | — | ✅ "Status berhasil diperbarui!" |
 | 13 | Pasien | Dashboard Publik menampilkan data terbaru | Frontend → SC | `getRoomStatus()` | Badge status kamar diperbarui |
+
+---
+
+## 🔷 Diagram Use Case dan Cara Kerja
+
+### Use Case Diagram — Interaksi Aktor dengan DApp
+
+```mermaid
+flowchart LR
+    %% ── AKTOR ──────────────────────────────────────────────────
+    AP(["🔑 Admin Pusat<br>(Owner / Deployer)"])
+    SR(["🏥 Staf RS<br>(Wallet Terdaftar)"])
+    PS(["👤 Pasien<br>(Publik / Tanpa Wallet)"])
+
+    %% ── USE CASE NODE ───────────────────────────────────────────
+    UC1["📋 Mendaftarkan RS<br>addHospital()"]
+    UC2["🗑️ Mencabut Akses RS<br>removeHospital()"]
+    UC3["📊 Melihat Semua RS<br>getAllHospitals()"]
+    UC4["📡 Update Status Kamar<br>updateRoomStatus()"]
+    UC5["🔍 Melihat Ketersediaan<br>getRoomStatus()"]
+    UC6["📈 Melihat Total RS<br>totalHospitals()"]
+
+    %% ── RELASI ADMIN PUSAT ──────────────────────────────────────
+    AP -->|"Hanya owner<br>onlyOwner modifier"| UC1
+    AP -->|"Cabut whitelist<br>onlyOwner modifier"| UC2
+    AP -->|"Pantau sistem<br>view function"| UC3
+
+    %% ── RELASI STAF RS ──────────────────────────────────────────
+    SR -->|"Wallet wajib terdaftar<br>onlyRegisteredHospital"| UC4
+    SR -->|"Cek status RS-nya<br>sendiri — view"| UC5
+
+    %% ── RELASI PASIEN ───────────────────────────────────────────
+    PS -->|"Tanpa wallet<br>tanpa gas — gratis"| UC5
+    PS -->|"Pantau jumlah RS<br>view function"| UC6
+
+    %% ── STYLING AKTOR ───────────────────────────────────────────
+    style AP fill:#fde68a,stroke:#f59e0b,color:#000
+    style SR fill:#bfdbfe,stroke:#3b82f6,color:#000
+    style PS fill:#bbf7d0,stroke:#22c55e,color:#000
+
+    %% ── STYLING USE CASE ────────────────────────────────────────
+    style UC1 fill:#6366f1,stroke:#4338ca,color:#fff
+    style UC2 fill:#ef4444,stroke:#b91c1c,color:#fff
+    style UC3 fill:#8b5cf6,stroke:#6d28d9,color:#fff
+    style UC4 fill:#0d9488,stroke:#0f766e,color:#fff
+    style UC5 fill:#10b981,stroke:#059669,color:#fff
+    style UC6 fill:#64748b,stroke:#475569,color:#fff
+```
+
+---
+
+### Tabel Cara Kerja Sistem
+
+| Aktor | Aksi / Fitur | Eksekusi Smart Contract | Output Visual |
+|-------|-------------|------------------------|---------------|
+| **Admin Pusat** | Mendaftarkan RS baru dengan alamat wallet & nama RS | `addHospital(address wallet, string name)` — dilindungi modifier `onlyOwner`; data disimpan ke `mapping(address => RoomInfo)` dan `hospitalList[]` | Event `HospitalAdded` terpancar; wallet RS masuk whitelist; RS baru muncul di daftar dashboard |
+| **Admin Pusat** | Mencabut akses RS yang sudah tidak aktif | `removeHospital(address wallet)` — modifier `onlyOwner`; hanya mengubah flag `isRegistered = false`, data historis tetap on-chain | Event `HospitalRemoved` terpancar; RS tidak lagi bisa update kamar; data lama tetap transparan |
+| **Admin Pusat** | Memantau seluruh RS yang terdaftar dalam sistem | `getAllHospitals()` — fungsi `view`, gratis, mengembalikan array seluruh address RS | Tabel/daftar semua wallet RS ditampilkan di panel admin |
+| **Staf RS** | Memperbarui jumlah kamar tersedia dan total kapasitas | `updateRoomStatus(uint available, uint total)` — modifier `onlyRegisteredHospital`; menulis `availableRooms`, `totalRooms`, `lastUpdated` ke blockchain | Event `RoomStatusUpdated` terpancar; MetaMask konfirmasi tx; dashboard publik refresh otomatis |
+| **Staf RS** | Mengecek status kamar RS miliknya sendiri sebelum update | `getRoomStatus(address)` — fungsi `view`, tanpa gas; mengembalikan `(name, totalRooms, availableRooms, isRegistered, lastUpdated, isFull)` | Kartu status RS dengan badge **🟢 TERSEDIA** atau **🔴 PENUH** beserta angka kapasitas |
+| **Pasien** | Melihat ketersediaan kamar RS tertentu secara real-time | `getRoomStatus(address)` — fungsi `view`; tidak memerlukan wallet atau gas; data dibaca langsung dari blockchain | Badge **🟢 TERSEDIA (X/Y kamar)** atau **🔴 PENUH (0/Y kamar)** beserta timestamp pembaruan terakhir |
+| **Pasien** | Memantau total rumah sakit yang bergabung dalam sistem | `totalHospitals()` — fungsi `view`, gratis; mengembalikan `uint256` jumlah RS | Angka total RS ditampilkan di header dashboard publik |
