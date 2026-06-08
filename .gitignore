@@ -5,3 +5,8 @@ artifacts/
 cache/
 coverage/
 typechain-types/
+
+# Foundry
+out/
+broadcast/
+.foundry/

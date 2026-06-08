@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "forge test --via-ir -vv",
+    "test:verbose": "forge test --via-ir -vvvv",
+    "test:gas": "forge test --via-ir --gas-report",
+    "test:fuzz": "forge test --via-ir --fuzz-runs 1000",
+    "forge:install": "forge install foundry-rs/forge-std --no-commit"
   },
   "keywords": [],
   "author": "",
