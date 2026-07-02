@@ -7,15 +7,15 @@
 
 ```mermaid
 flowchart TD
-    A["Admin Pusat / Deployer Contract (Pemilik)"]
-    B["Staf Rumah Sakit (Wallet Terdaftar)"]
-    C["Status Kamar RS\n(Data On-Chain)"]
-    D["Masyarakat / Pasien (Publik)"]
+    A["Admin Pusat / Deployer Contract"]
+    B["Staf Rumah Sakit - Wallet Terdaftar"]
+    C["Status Kamar RS - Data On-Chain"]
+    D["Masyarakat / Pasien - Publik"]
 
-    A -->|"addHospital(address, name)\nMendaftarkan wallet ke whitelist"| B
-    B -->|"updateRoomStatus(available, total)\nMemperbarui data on-chain"| C
-    D -->|"getRoomStatus(address)\nMembaca data — read-only, gratis"| C
-    C -->|"Menampilkan: 🟢 Tersedia / 🔴 Penuh\nberikut jumlah & nama RS"| D
+    A -->|"addHospital\nMendaftarkan wallet ke whitelist"| B
+    B -->|"updateRoomStatus\nMemperbarui data on-chain"| C
+    D -->|"getRoomStatus\nMembaca data - read-only, gratis"| C
+    C -->|"Menampilkan: Tersedia / Penuh\nberikut jumlah dan nama RS"| D
 ```
 
 ---
@@ -153,9 +153,9 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ---
 
-- [HospitalRoom.sol](file:///C:/Users/Windows/sct/hospital-dapp/contracts/HospitalRoom.sol)
-- [deploy.js](file:///C:/Users/Windows/sct/hospital-dapp/scripts/deploy.js)
-- [hardhat.config.js](file:///C:/Users/Windows/sct/hospital-dapp/hardhat.config.js)
+- [HospitalRoom.sol](../contracts/HospitalRoom.sol)
+- [deploy.js](../scripts/deploy.js)
+- [hardhat.config.js](../hardhat.config.js)
 
 ---
 
@@ -165,58 +165,58 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ```mermaid
 flowchart TD
-    %% ── AKTOR ───────────────────────────────────────────────
-    Pasien(["👤 Pasien / Masyarakat\n(Publik — tanpa wallet)"])
-    AdminRS(["🏥 Staf Rumah Sakit\n(Wallet Terdaftar)"])
-    AdminPusat(["🔑 Admin Pusat / Owner\n(Deployer Contract)"])
-    Frontend["🖥️ Frontend\n(React + Ethers.js v6)"]
-    SC["⛓️ Smart Contract\nHospitalRoom.sol"]
-    Blockchain[("📦 Blockchain\nHardhat Local Node")]
+    %% AKTOR
+    Pasien(["Pasien / Masyarakat\nPublik - tanpa wallet"])
+    AdminRS(["Staf Rumah Sakit\nWallet Terdaftar"])
+    AdminPusat(["Admin Pusat / Owner\nDeployer Contract"])
+    Frontend["Frontend\nReact + Ethers.js v6"]
+    SC["Smart Contract\nHospitalRoom.sol"]
+    Blockchain[("Blockchain\nHardhat Local Node")]
 
-    %% ── ALUR ADMIN PUSAT ─────────────────────────────────────
-    subgraph INPUT_OWNER ["INPUT — Admin Pusat"]
-        AdminPusat -->|"1. Input: address wallet RS\n+ nama rumah sakit"| Frontend
+    %% ALUR ADMIN PUSAT
+    subgraph INPUT_OWNER ["INPUT - Admin Pusat"]
+        AdminPusat -->|"1. Input: address wallet RS\ndan nama rumah sakit"| Frontend
     end
 
-    subgraph PROSES_OWNER ["PROSES — Smart Contract"]
-        Frontend -->|"2. Panggil addHospital()\nonlyOwner modifier"| SC
-        SC -->|"3. Validasi & simpan\nRoomInfo ke mapping"| Blockchain
+    subgraph PROSES_OWNER ["PROSES - Smart Contract"]
+        Frontend -->|"2. Panggil addHospital\nonlyOwner modifier"| SC
+        SC -->|"3. Validasi dan simpan\nRoomInfo ke mapping"| Blockchain
     end
 
     subgraph OUTPUT_OWNER ["OUTPUT"]
-        Blockchain -->|"4. Emit HospitalAdded event\nWallet RS masuk whitelist ✅"| AdminPusat
+        Blockchain -->|"4. Emit HospitalAdded event\nWallet RS masuk whitelist"| AdminPusat
     end
 
-    %% ── ALUR STAF RS ─────────────────────────────────────────
-    subgraph INPUT_RS ["INPUT — Staf Rumah Sakit"]
-        AdminRS -->|"5. Input: jumlah kamar\ntersedia + total kapasitas"| Frontend
+    %% ALUR STAF RS
+    subgraph INPUT_RS ["INPUT - Staf Rumah Sakit"]
+        AdminRS -->|"5. Input: jumlah kamar\ntersedia dan total kapasitas"| Frontend
     end
 
-    subgraph PROSES_RS ["PROSES — Smart Contract"]
-        Frontend -->|"6. Panggil updateRoomStatus()\nonlyRegisteredHospital modifier"| SC
+    subgraph PROSES_RS ["PROSES - Smart Contract"]
+        Frontend -->|"6. Panggil updateRoomStatus\nonlyRegisteredHospital modifier"| SC
         SC -->|"7. Update RoomInfo\ndi blockchain"| Blockchain
     end
 
     subgraph OUTPUT_RS ["OUTPUT"]
-        Blockchain -->|"8. Emit RoomStatusUpdated event\nData kamar diperbarui on-chain ✅"| AdminRS
+        Blockchain -->|"8. Emit RoomStatusUpdated event\nData kamar diperbarui on-chain"| AdminRS
     end
 
-    %% ── ALUR PASIEN ──────────────────────────────────────────
-    subgraph INPUT_PASIEN ["INPUT — Pasien (Publik)"]
+    %% ALUR PASIEN
+    subgraph INPUT_PASIEN ["INPUT - Pasien Publik"]
         Pasien -->|"9. Input: wallet address RS\nyang ingin dilihat"| Frontend
     end
 
-    subgraph PROSES_PASIEN ["PROSES — Read-Only"]
-        Frontend -->|"10. Panggil getRoomStatus()\nview function — GRATIS"| SC
+    subgraph PROSES_PASIEN ["PROSES - Read-Only"]
+        Frontend -->|"10. Panggil getRoomStatus\nview function - GRATIS"| SC
         SC -->|"11. Baca data dari\nmapping on-chain"| Blockchain
     end
 
-    subgraph OUTPUT_PASIEN ["OUTPUT — Tampilan Dashboard"]
+    subgraph OUTPUT_PASIEN ["OUTPUT - Tampilan Dashboard"]
         Blockchain -->|"12. Return: nama, tersedia,\ntotal, isFull, lastUpdated"| Frontend
-        Frontend -->|"13. Render badge:\n🟢 TERSEDIA / 🔴 PENUH"| Pasien
+        Frontend -->|"13. Render badge:\nTERSEDIA / PENUH"| Pasien
     end
 
-    %% ── STYLING ──────────────────────────────────────────────
+    %% STYLING
     style INPUT_OWNER  fill:#fef3c7,stroke:#f59e0b,color:#000
     style PROSES_OWNER fill:#dbeafe,stroke:#3b82f6,color:#000
     style OUTPUT_OWNER fill:#dcfce7,stroke:#22c55e,color:#000
@@ -295,38 +295,38 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    %% ── AKTOR ──────────────────────────────────────────────────
-    AP(["🔑 Admin Pusat<br>(Owner / Deployer)"])
-    SR(["🏥 Staf RS<br>(Wallet Terdaftar)"])
-    PS(["👤 Pasien<br>(Publik / Tanpa Wallet)"])
+    %% AKTOR
+    AP(["Admin Pusat\nOwner / Deployer"])
+    SR(["Staf RS\nWallet Terdaftar"])
+    PS(["Pasien\nPublik / Tanpa Wallet"])
 
-    %% ── USE CASE NODE ───────────────────────────────────────────
-    UC1["📋 Mendaftarkan RS<br>addHospital()"]
-    UC2["🗑️ Mencabut Akses RS<br>removeHospital()"]
-    UC3["📊 Melihat Semua RS<br>getAllHospitals()"]
-    UC4["📡 Update Status Kamar<br>updateRoomStatus()"]
-    UC5["🔍 Melihat Ketersediaan<br>getRoomStatus()"]
-    UC6["📈 Melihat Total RS<br>totalHospitals()"]
+    %% USE CASE NODE
+    UC1["Mendaftarkan RS\naddHospital"]
+    UC2["Mencabut Akses RS\nremoveHospital"]
+    UC3["Melihat Semua RS\ngetAllHospitals"]
+    UC4["Update Status Kamar\nupdateRoomStatus"]
+    UC5["Melihat Ketersediaan\ngetRoomStatus"]
+    UC6["Melihat Total RS\ntotalHospitals"]
 
-    %% ── RELASI ADMIN PUSAT ──────────────────────────────────────
-    AP -->|"Hanya owner<br>onlyOwner modifier"| UC1
-    AP -->|"Cabut whitelist<br>onlyOwner modifier"| UC2
-    AP -->|"Pantau sistem<br>view function"| UC3
+    %% RELASI ADMIN PUSAT
+    AP -->|"Hanya owner\nonlyOwner modifier"| UC1
+    AP -->|"Cabut whitelist\nonlyOwner modifier"| UC2
+    AP -->|"Pantau sistem\nview function"| UC3
 
-    %% ── RELASI STAF RS ──────────────────────────────────────────
-    SR -->|"Wallet wajib terdaftar<br>onlyRegisteredHospital"| UC4
-    SR -->|"Cek status RS-nya<br>sendiri — view"| UC5
+    %% RELASI STAF RS
+    SR -->|"Wallet wajib terdaftar\nonlyRegisteredHospital"| UC4
+    SR -->|"Cek status RS sendiri\nview function"| UC5
 
-    %% ── RELASI PASIEN ───────────────────────────────────────────
-    PS -->|"Tanpa wallet<br>tanpa gas — gratis"| UC5
-    PS -->|"Pantau jumlah RS<br>view function"| UC6
+    %% RELASI PASIEN
+    PS -->|"Tanpa wallet\ntanpa gas - gratis"| UC5
+    PS -->|"Pantau jumlah RS\nview function"| UC6
 
-    %% ── STYLING AKTOR ───────────────────────────────────────────
+    %% STYLING AKTOR
     style AP fill:#fde68a,stroke:#f59e0b,color:#000
     style SR fill:#bfdbfe,stroke:#3b82f6,color:#000
     style PS fill:#bbf7d0,stroke:#22c55e,color:#000
 
-    %% ── STYLING USE CASE ────────────────────────────────────────
+    %% STYLING USE CASE
     style UC1 fill:#6366f1,stroke:#4338ca,color:#fff
     style UC2 fill:#ef4444,stroke:#b91c1c,color:#fff
     style UC3 fill:#8b5cf6,stroke:#6d28d9,color:#fff
