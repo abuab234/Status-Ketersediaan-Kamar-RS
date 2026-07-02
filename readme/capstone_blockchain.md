@@ -165,35 +165,73 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ```mermaid
 flowchart TD
-    AP(["Admin Pusat / Owner"])
-    SR(["Staf Rumah Sakit"])
-    PS(["Pasien / Masyarakat"])
-    FE["Frontend React"]
-    SC["Smart Contract HospitalRoom"]
-    BC[("Blockchain")]
 
-    AP -->|"1. Input address RS dan nama"| FE
-    FE -->|"2. addHospital - onlyOwner"| SC
-    SC -->|"3. Simpan RoomInfo ke mapping"| BC
-    BC -->|"4. Emit HospitalAdded - whitelist OK"| AP
+    %% ─── ADMIN PUSAT ───────────────────────────────────────────
+    subgraph ADMIN["👤 ADMIN PUSAT (Owner / Deployer)"]
+        A1([MULAI])
+        A2[/"MASUKAN: address wallet RS, nama RS"/]
+        A3{"caller == owner?"}
+        A4["Validasi: address != 0x0, nama != kosong"]
+        A5{"Sudah terdaftar?"}
+        A6["hospitalData[addr] = RoomInfo tersimpan"]
+        A7["hospitalList.push, totalHospitals++"]
+        A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
+        A9([SELESAI])
+        AR1["REVERT: Bukan Owner"]
+        AR2["REVERT: Sudah Ada"]
 
-    SR -->|"5. Input jumlah kamar"| FE
-    FE -->|"6. updateRoomStatus - onlyRegisteredHospital"| SC
-    SC -->|"7. Update RoomInfo"| BC
-    BC -->|"8. Emit RoomStatusUpdated"| SR
+        A1 --> A2 --> A3
+        A3 -->|"Tidak"| AR1
+        A3 -->|"Ya"| A4 --> A5
+        A5 -->|"Ya"| AR2
+        A5 -->|"Tidak"| A6 --> A7 --> A8 --> A9
+    end
 
-    PS -->|"9. Pilih RS yang ingin dicek"| FE
-    FE -->|"10. getRoomStatus - view, GRATIS"| SC
-    SC -->|"11. Baca data dari mapping"| BC
-    BC -->|"12. Return nama, tersedia, total, isFull"| FE
-    FE -->|"13. Tampilkan badge TERSEDIA atau PENUH"| PS
+    %% ─── STAF RUMAH SAKIT ──────────────────────────────────────
+    subgraph STAF["🏥 STAF RUMAH SAKIT (Wallet Terdaftar)"]
+        B1([MULAI])
+        B2[/"MASUKAN: kamar tersedia, total kapasitas"/]
+        B3{"isRegistered[msg.sender]?"}
+        B4["Validasi: total > 0"]
+        B5{"available <= total?"}
+        B6["Update on-chain: availableRooms, totalRooms"]
+        B7["lastUpdated = block.timestamp"]
+        B8[/"KELUARAN: emit RoomStatusUpdated"/]
+        B9([SELESAI])
+        BR1["REVERT: Bukan RS Terdaftar"]
+        BR2["REVERT: Melebihi Kapasitas"]
 
-    style AP fill:#fef3c7,stroke:#f59e0b,color:#000
-    style SR fill:#fef3c7,stroke:#f59e0b,color:#000
-    style PS fill:#fef3c7,stroke:#f59e0b,color:#000
-    style FE fill:#0d9488,stroke:#0f766e,color:#fff
-    style SC fill:#6366f1,stroke:#4338ca,color:#fff
-    style BC fill:#1e293b,stroke:#475569,color:#fff
+        B1 --> B2 --> B3
+        B3 -->|"Tidak"| BR1
+        B3 -->|"Ya"| B4 --> B5
+        B5 -->|"Tidak"| BR2
+        B5 -->|"Ya"| B6 --> B7 --> B8 --> B9
+    end
+
+    %% ─── PASIEN / MASYARAKAT ───────────────────────────────────
+    subgraph PUBLIK["👥 PASIEN / MASYARAKAT (Publik — Tanpa Wallet)"]
+        C1([MULAI])
+        C2[/"MASUKAN: address RS yang ingin dicek"/]
+        C3["getRoomStatus: view function, tanpa gas, tanpa transaksi"]
+        C4["Baca RoomInfo dari mapping on-chain"]
+        C5["Hitung: isFull = available == 0"]
+        C6[/"KELUARAN: nama, totalRooms, availableRooms, isFull"/]
+        C7["Tampilkan badge: TERSEDIA atau PENUH"]
+        C8([SELESAI])
+
+        C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8
+    end
+
+    style AR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style AR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style BR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style BR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style A1 fill:#1e293b,color:#fff,stroke:#475569
+    style A9 fill:#1e293b,color:#fff,stroke:#475569
+    style B1 fill:#1e293b,color:#fff,stroke:#475569
+    style B9 fill:#1e293b,color:#fff,stroke:#475569
+    style C1 fill:#1e293b,color:#fff,stroke:#475569
+    style C8 fill:#1e293b,color:#fff,stroke:#475569
 ```
 
 ---
