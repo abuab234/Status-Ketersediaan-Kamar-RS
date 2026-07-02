@@ -12,10 +12,10 @@ flowchart TD
     C["Status Kamar RS - Data On-Chain"]
     D["Masyarakat / Pasien - Publik"]
 
-    A -->|"addHospital\nMendaftarkan wallet ke whitelist"| B
-    B -->|"updateRoomStatus\nMemperbarui data on-chain"| C
-    D -->|"getRoomStatus\nMembaca data - read-only, gratis"| C
-    C -->|"Menampilkan: Tersedia / Penuh\nberikut jumlah dan nama RS"| D
+    A -->|"addHospital - Mendaftarkan wallet ke whitelist"| B
+    B -->|"updateRoomStatus - Memperbarui data on-chain"| C
+    D -->|"getRoomStatus - Membaca data, read-only, gratis"| C
+    C -->|"Menampilkan: Tersedia atau Penuh, jumlah dan nama RS"| D
 ```
 
 ---
@@ -165,70 +165,35 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ```mermaid
 flowchart TD
-    %% AKTOR
-    Pasien(["Pasien / Masyarakat\nPublik - tanpa wallet"])
-    AdminRS(["Staf Rumah Sakit\nWallet Terdaftar"])
-    AdminPusat(["Admin Pusat / Owner\nDeployer Contract"])
-    Frontend["Frontend\nReact + Ethers.js v6"]
-    SC["Smart Contract\nHospitalRoom.sol"]
-    Blockchain[("Blockchain\nHardhat Local Node")]
+    AP(["Admin Pusat / Owner"])
+    SR(["Staf Rumah Sakit"])
+    PS(["Pasien / Masyarakat"])
+    FE["Frontend React"]
+    SC["Smart Contract HospitalRoom"]
+    BC[("Blockchain")]
 
-    %% ALUR ADMIN PUSAT
-    subgraph INPUT_OWNER ["INPUT - Admin Pusat"]
-        AdminPusat -->|"1. Input: address wallet RS\ndan nama rumah sakit"| Frontend
-    end
+    AP -->|"1. Input address RS dan nama"| FE
+    FE -->|"2. addHospital - onlyOwner"| SC
+    SC -->|"3. Simpan RoomInfo ke mapping"| BC
+    BC -->|"4. Emit HospitalAdded - whitelist OK"| AP
 
-    subgraph PROSES_OWNER ["PROSES - Smart Contract"]
-        Frontend -->|"2. Panggil addHospital\nonlyOwner modifier"| SC
-        SC -->|"3. Validasi dan simpan\nRoomInfo ke mapping"| Blockchain
-    end
+    SR -->|"5. Input jumlah kamar"| FE
+    FE -->|"6. updateRoomStatus - onlyRegisteredHospital"| SC
+    SC -->|"7. Update RoomInfo"| BC
+    BC -->|"8. Emit RoomStatusUpdated"| SR
 
-    subgraph OUTPUT_OWNER ["OUTPUT"]
-        Blockchain -->|"4. Emit HospitalAdded event\nWallet RS masuk whitelist"| AdminPusat
-    end
+    PS -->|"9. Pilih RS yang ingin dicek"| FE
+    FE -->|"10. getRoomStatus - view, GRATIS"| SC
+    SC -->|"11. Baca data dari mapping"| BC
+    BC -->|"12. Return nama, tersedia, total, isFull"| FE
+    FE -->|"13. Tampilkan badge TERSEDIA atau PENUH"| PS
 
-    %% ALUR STAF RS
-    subgraph INPUT_RS ["INPUT - Staf Rumah Sakit"]
-        AdminRS -->|"5. Input: jumlah kamar\ntersedia dan total kapasitas"| Frontend
-    end
-
-    subgraph PROSES_RS ["PROSES - Smart Contract"]
-        Frontend -->|"6. Panggil updateRoomStatus\nonlyRegisteredHospital modifier"| SC
-        SC -->|"7. Update RoomInfo\ndi blockchain"| Blockchain
-    end
-
-    subgraph OUTPUT_RS ["OUTPUT"]
-        Blockchain -->|"8. Emit RoomStatusUpdated event\nData kamar diperbarui on-chain"| AdminRS
-    end
-
-    %% ALUR PASIEN
-    subgraph INPUT_PASIEN ["INPUT - Pasien Publik"]
-        Pasien -->|"9. Input: wallet address RS\nyang ingin dilihat"| Frontend
-    end
-
-    subgraph PROSES_PASIEN ["PROSES - Read-Only"]
-        Frontend -->|"10. Panggil getRoomStatus\nview function - GRATIS"| SC
-        SC -->|"11. Baca data dari\nmapping on-chain"| Blockchain
-    end
-
-    subgraph OUTPUT_PASIEN ["OUTPUT - Tampilan Dashboard"]
-        Blockchain -->|"12. Return: nama, tersedia,\ntotal, isFull, lastUpdated"| Frontend
-        Frontend -->|"13. Render badge:\nTERSEDIA / PENUH"| Pasien
-    end
-
-    %% STYLING
-    style INPUT_OWNER  fill:#fef3c7,stroke:#f59e0b,color:#000
-    style PROSES_OWNER fill:#dbeafe,stroke:#3b82f6,color:#000
-    style OUTPUT_OWNER fill:#dcfce7,stroke:#22c55e,color:#000
-    style INPUT_RS     fill:#fef3c7,stroke:#f59e0b,color:#000
-    style PROSES_RS    fill:#dbeafe,stroke:#3b82f6,color:#000
-    style OUTPUT_RS    fill:#dcfce7,stroke:#22c55e,color:#000
-    style INPUT_PASIEN  fill:#fef3c7,stroke:#f59e0b,color:#000
-    style PROSES_PASIEN fill:#dbeafe,stroke:#3b82f6,color:#000
-    style OUTPUT_PASIEN fill:#dcfce7,stroke:#22c55e,color:#000
-    style SC           fill:#6366f1,stroke:#4338ca,color:#fff
-    style Blockchain   fill:#1e293b,stroke:#475569,color:#fff
-    style Frontend     fill:#0d9488,stroke:#0f766e,color:#fff
+    style AP fill:#fef3c7,stroke:#f59e0b,color:#000
+    style SR fill:#fef3c7,stroke:#f59e0b,color:#000
+    style PS fill:#fef3c7,stroke:#f59e0b,color:#000
+    style FE fill:#0d9488,stroke:#0f766e,color:#fff
+    style SC fill:#6366f1,stroke:#4338ca,color:#fff
+    style BC fill:#1e293b,stroke:#475569,color:#fff
 ```
 
 ---
@@ -296,30 +261,30 @@ flowchart TD
 ```mermaid
 flowchart LR
     %% AKTOR
-    AP(["Admin Pusat\nOwner / Deployer"])
-    SR(["Staf RS\nWallet Terdaftar"])
-    PS(["Pasien\nPublik / Tanpa Wallet"])
+    AP(["Admin Pusat - Owner / Deployer"])
+    SR(["Staf RS - Wallet Terdaftar"])
+    PS(["Pasien - Publik / Tanpa Wallet"])
 
     %% USE CASE NODE
-    UC1["Mendaftarkan RS\naddHospital"]
-    UC2["Mencabut Akses RS\nremoveHospital"]
-    UC3["Melihat Semua RS\ngetAllHospitals"]
-    UC4["Update Status Kamar\nupdateRoomStatus"]
-    UC5["Melihat Ketersediaan\ngetRoomStatus"]
-    UC6["Melihat Total RS\ntotalHospitals"]
+    UC1["Mendaftarkan RS - addHospital"]
+    UC2["Mencabut Akses RS - removeHospital"]
+    UC3["Melihat Semua RS - getAllHospitals"]
+    UC4["Update Status Kamar - updateRoomStatus"]
+    UC5["Melihat Ketersediaan - getRoomStatus"]
+    UC6["Melihat Total RS - totalHospitals"]
 
     %% RELASI ADMIN PUSAT
-    AP -->|"Hanya owner\nonlyOwner modifier"| UC1
-    AP -->|"Cabut whitelist\nonlyOwner modifier"| UC2
-    AP -->|"Pantau sistem\nview function"| UC3
+    AP -->|"Hanya owner - onlyOwner modifier"| UC1
+    AP -->|"Cabut whitelist - onlyOwner modifier"| UC2
+    AP -->|"Pantau sistem - view function"| UC3
 
     %% RELASI STAF RS
-    SR -->|"Wallet wajib terdaftar\nonlyRegisteredHospital"| UC4
-    SR -->|"Cek status RS sendiri\nview function"| UC5
+    SR -->|"Wallet wajib terdaftar - onlyRegisteredHospital"| UC4
+    SR -->|"Cek status RS sendiri - view function"| UC5
 
     %% RELASI PASIEN
-    PS -->|"Tanpa wallet\ntanpa gas - gratis"| UC5
-    PS -->|"Pantau jumlah RS\nview function"| UC6
+    PS -->|"Tanpa wallet, tanpa gas - gratis"| UC5
+    PS -->|"Pantau jumlah RS - view function"| UC6
 
     %% STYLING AKTOR
     style AP fill:#fde68a,stroke:#f59e0b,color:#000
