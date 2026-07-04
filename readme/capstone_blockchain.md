@@ -163,76 +163,136 @@ Gunakan Hardhat Console: npx hardhat console --network localhost
 
 ### Diagram Alir: Input → Proses → Output
 
+#### 1. Diagram Alir — addHospital (Admin Pusat)
+
 ```mermaid
 flowchart TD
+    A1([MULAI]) --> A2[/"MASUKAN: address wallet RS, nama RS"/]
+    A2 --> A3{"caller == owner?"}
+    A3 -->|"Tidak"| AR1["REVERT: Bukan Owner"]
+    A3 -->|"Ya"| A4["Validasi: address != 0x0, nama != kosong"]
+    A4 --> A5{"Sudah terdaftar?"}
+    A5 -->|"Ya"| AR2["REVERT: Sudah Ada"]
+    A5 -->|"Tidak"| A6["hospitalData addr = RoomInfo tersimpan"]
+    A6 --> A7["hospitalList.push addr, totalHospitals++"]
+    A7 --> A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
+    A8 --> A9([SELESAI])
 
-    %% ─── ADMIN PUSAT ───────────────────────────────────────────
-    subgraph ADMIN["👤 ADMIN PUSAT (Owner / Deployer)"]
-        A1([MULAI])
-        A2[/"MASUKAN: address wallet RS, nama RS"/]
-        A3{"caller == owner?"}
-        A4["Validasi: address != 0x0, nama != kosong"]
-        A5{"Sudah terdaftar?"}
-        A6["hospitalData[addr] = RoomInfo tersimpan"]
-        A7["hospitalList.push, totalHospitals++"]
-        A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
-        A9([SELESAI])
-        AR1["REVERT: Bukan Owner"]
-        AR2["REVERT: Sudah Ada"]
-
-        A1 --> A2 --> A3
-        A3 -->|"Tidak"| AR1
-        A3 -->|"Ya"| A4 --> A5
-        A5 -->|"Ya"| AR2
-        A5 -->|"Tidak"| A6 --> A7 --> A8 --> A9
-    end
-
-    %% ─── STAF RUMAH SAKIT ──────────────────────────────────────
-    subgraph STAF["🏥 STAF RUMAH SAKIT (Wallet Terdaftar)"]
-        B1([MULAI])
-        B2[/"MASUKAN: kamar tersedia, total kapasitas"/]
-        B3{"isRegistered[msg.sender]?"}
-        B4["Validasi: total > 0"]
-        B5{"available <= total?"}
-        B6["Update on-chain: availableRooms, totalRooms"]
-        B7["lastUpdated = block.timestamp"]
-        B8[/"KELUARAN: emit RoomStatusUpdated"/]
-        B9([SELESAI])
-        BR1["REVERT: Bukan RS Terdaftar"]
-        BR2["REVERT: Melebihi Kapasitas"]
-
-        B1 --> B2 --> B3
-        B3 -->|"Tidak"| BR1
-        B3 -->|"Ya"| B4 --> B5
-        B5 -->|"Tidak"| BR2
-        B5 -->|"Ya"| B6 --> B7 --> B8 --> B9
-    end
-
-    %% ─── PASIEN / MASYARAKAT ───────────────────────────────────
-    subgraph PUBLIK["👥 PASIEN / MASYARAKAT (Publik — Tanpa Wallet)"]
-        C1([MULAI])
-        C2[/"MASUKAN: address RS yang ingin dicek"/]
-        C3["getRoomStatus: view function, tanpa gas, tanpa transaksi"]
-        C4["Baca RoomInfo dari mapping on-chain"]
-        C5["Hitung: isFull = available == 0"]
-        C6[/"KELUARAN: nama, totalRooms, availableRooms, isFull"/]
-        C7["Tampilkan badge: TERSEDIA atau PENUH"]
-        C8([SELESAI])
-
-        C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8
-    end
-
-    style AR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
-    style AR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
-    style BR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
-    style BR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
     style A1 fill:#1e293b,color:#fff,stroke:#475569
     style A9 fill:#1e293b,color:#fff,stroke:#475569
+    style AR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style AR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style A3 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style A5 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style A4 fill:#1d4ed8,color:#fff,stroke:#1e40af
+    style A6 fill:#1d4ed8,color:#fff,stroke:#1e40af
+    style A7 fill:#1d4ed8,color:#fff,stroke:#1e40af
+    style A2 fill:#b45309,color:#fff,stroke:#92400e
+    style A8 fill:#b45309,color:#fff,stroke:#92400e
+```
+
+#### 2. Diagram Alir — removeHospital (Admin Pusat)
+
+```mermaid
+flowchart TD
+    R1([MULAI]) --> R2[/"MASUKAN: address wallet RS yang akan dicabut"/]
+    R2 --> R3{"caller == owner?"}
+    R3 -->|"Tidak"| RR1["REVERT: Bukan Owner"]
+    R3 -->|"Ya"| R4{"RS terdaftar?"}
+    R4 -->|"Tidak"| RR2["REVERT: Belum Terdaftar"]
+    R4 -->|"Ya"| R5["isRegistered = false, data historis tetap ada"]
+    R5 --> R6[/"KELUARAN: emit HospitalRemoved, akses RS dicabut"/]
+    R6 --> R7([SELESAI])
+
+    style R1 fill:#1e293b,color:#fff,stroke:#475569
+    style R7 fill:#1e293b,color:#fff,stroke:#475569
+    style RR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style RR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style R3 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style R4 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style R5 fill:#1d4ed8,color:#fff,stroke:#1e40af
+    style R2 fill:#b45309,color:#fff,stroke:#92400e
+    style R6 fill:#b45309,color:#fff,stroke:#92400e
+```
+
+#### 3. Diagram Alir — updateRoomStatus (Staf Rumah Sakit)
+
+```mermaid
+flowchart TD
+    B1([MULAI]) --> B2[/"MASUKAN: kamar tersedia available, total kapasitas total"/]
+    B2 --> B3{"isRegistered msg.sender ?"}
+    B3 -->|"Tidak"| BR1["REVERT: Bukan RS Terdaftar"]
+    B3 -->|"Ya"| B4{"available <= total?"}
+    B4 -->|"Tidak"| BR2["REVERT: Melebihi Kapasitas"]
+    B4 -->|"Ya"| B5{"total > 0?"}
+    B5 -->|"Tidak"| BR3["REVERT: Total harus lebih dari 0"]
+    B5 -->|"Ya"| B6["Update on-chain: availableRooms, totalRooms"]
+    B6 --> B7["lastUpdated = block.timestamp"]
+    B7 --> B8[/"KELUARAN: emit RoomStatusUpdated, data kamar diperbarui"/]
+    B8 --> B9([SELESAI])
+
     style B1 fill:#1e293b,color:#fff,stroke:#475569
     style B9 fill:#1e293b,color:#fff,stroke:#475569
+    style BR1 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style BR2 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style BR3 fill:#b91c1c,color:#fff,stroke:#7f1d1d
+    style B3 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style B4 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style B5 fill:#6d28d9,color:#fff,stroke:#5b21b6
+    style B6 fill:#0d9488,color:#fff,stroke:#0f766e
+    style B7 fill:#0d9488,color:#fff,stroke:#0f766e
+    style B2 fill:#b45309,color:#fff,stroke:#92400e
+    style B8 fill:#b45309,color:#fff,stroke:#92400e
+```
+
+#### 4. Diagram Alir — getRoomStatus (Pasien / Masyarakat)
+
+```mermaid
+flowchart TD
+    C1([MULAI]) --> C2[/"MASUKAN: address wallet RS yang ingin dicek"/]
+    C2 --> C3["getRoomStatus address — view function, tanpa gas"]
+    C3 --> C4["Baca RoomInfo dari mapping on-chain"]
+    C4 --> C5["Hitung: isFull = availableRooms == 0"]
+    C5 --> C6[/"KELUARAN: nama, totalRooms, availableRooms, isFull, lastUpdated"/]
+    C6 --> C7["Tampilkan badge: TERSEDIA atau PENUH"]
+    C7 --> C8([SELESAI])
+
     style C1 fill:#1e293b,color:#fff,stroke:#475569
     style C8 fill:#1e293b,color:#fff,stroke:#475569
+    style C3 fill:#0369a1,color:#fff,stroke:#075985
+    style C4 fill:#0369a1,color:#fff,stroke:#075985
+    style C5 fill:#0369a1,color:#fff,stroke:#075985
+    style C7 fill:#0369a1,color:#fff,stroke:#075985
+    style C2 fill:#b45309,color:#fff,stroke:#92400e
+    style C6 fill:#b45309,color:#fff,stroke:#92400e
 ```
+
+#### 5. Diagram Alir — getAllHospitals dan totalHospitals (Publik)
+
+```mermaid
+flowchart TD
+    D1([MULAI]) --> D2[/"MASUKAN: permintaan dari frontend atau browser"/]
+    D2 --> D3["getAllHospitals — view, return address array semua RS"]
+    D3 --> D4["totalHospitals — view, return uint256 jumlah RS"]
+    D4 --> D5[/"KELUARAN: array address RS, jumlah total RS"/]
+    D5 --> D6["Tampilkan daftar RS di dashboard publik"]
+    D6 --> D7([SELESAI])
+
+    style D1 fill:#1e293b,color:#fff,stroke:#475569
+    style D7 fill:#1e293b,color:#fff,stroke:#475569
+    style D3 fill:#0369a1,color:#fff,stroke:#075985
+    style D4 fill:#0369a1,color:#fff,stroke:#075985
+    style D6 fill:#0369a1,color:#fff,stroke:#075985
+    style D2 fill:#b45309,color:#fff,stroke:#92400e
+    style D5 fill:#b45309,color:#fff,stroke:#92400e
+```
+
+> **Keterangan Simbol Flowchart:**
+> - **Oval `([...])`** = MULAI / SELESAI (Terminator) — warna gelap
+> - **Jajar Genjang `[/".../"]`** = MASUKAN / KELUARAN (I/O) — warna oranye
+> - **Persegi Panjang `["..."]`** = PROSES (Process) — warna biru
+> - **Belah Ketupat `{"..."}`** = KEPUTUSAN (Decision) — warna ungu
+> - **Kotak Merah** = REVERT / Ditolak (Error Path) — warna merah
 
 ---
 
