@@ -175,7 +175,8 @@ flowchart TD
     A5 -->|"Ya"| AR2["REVERT: Sudah Ada"]
     A5 -->|"Tidak"| A6["hospitalData addr = RoomInfo tersimpan"]
     A6 --> A7["hospitalList.push addr, totalHospitals++"]
-    A7 --> A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
+    A7 --> ADB[("Simpan ke Blockchain")]
+    ADB --> A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
     A8 --> A9([SELESAI])
 
     style A1 fill:#1e293b,color:#fff,stroke:#475569
@@ -189,6 +190,7 @@ flowchart TD
     style A7 fill:#1d4ed8,color:#fff,stroke:#1e40af
     style A2 fill:#b45309,color:#fff,stroke:#92400e
     style A8 fill:#b45309,color:#fff,stroke:#92400e
+    style ADB fill:#0f172a,color:#facc15,stroke:#facc15,stroke-width:3px
 ```
 
 #### 2. Diagram Alir — removeHospital (Admin Pusat)
@@ -201,7 +203,8 @@ flowchart TD
     R3 -->|"Ya"| R4{"RS terdaftar?"}
     R4 -->|"Tidak"| RR2["REVERT: Belum Terdaftar"]
     R4 -->|"Ya"| R5["isRegistered = false, data historis tetap ada"]
-    R5 --> R6[/"KELUARAN: emit HospitalRemoved, akses RS dicabut"/]
+    R5 --> RDB[("Update di Blockchain")]
+    RDB --> R6[/"KELUARAN: emit HospitalRemoved, akses RS dicabut"/]
     R6 --> R7([SELESAI])
 
     style R1 fill:#1e293b,color:#fff,stroke:#475569
@@ -213,6 +216,7 @@ flowchart TD
     style R5 fill:#1d4ed8,color:#fff,stroke:#1e40af
     style R2 fill:#b45309,color:#fff,stroke:#92400e
     style R6 fill:#b45309,color:#fff,stroke:#92400e
+    style RDB fill:#0f172a,color:#facc15,stroke:#facc15,stroke-width:3px
 ```
 
 #### 3. Diagram Alir — updateRoomStatus (Staf Rumah Sakit)
@@ -228,7 +232,8 @@ flowchart TD
     B5 -->|"Tidak"| BR3["REVERT: Total harus lebih dari 0"]
     B5 -->|"Ya"| B6["Update on-chain: availableRooms, totalRooms"]
     B6 --> B7["lastUpdated = block.timestamp"]
-    B7 --> B8[/"KELUARAN: emit RoomStatusUpdated, data kamar diperbarui"/]
+    B7 --> BDB[("Simpan ke Blockchain")]
+    BDB --> B8[/"KELUARAN: emit RoomStatusUpdated, data kamar diperbarui"/]
     B8 --> B9([SELESAI])
 
     style B1 fill:#1e293b,color:#fff,stroke:#475569
@@ -243,6 +248,7 @@ flowchart TD
     style B7 fill:#0d9488,color:#fff,stroke:#0f766e
     style B2 fill:#b45309,color:#fff,stroke:#92400e
     style B8 fill:#b45309,color:#fff,stroke:#92400e
+    style BDB fill:#0f172a,color:#facc15,stroke:#facc15,stroke-width:3px
 ```
 
 #### 4. Diagram Alir — getRoomStatus (Pasien / Masyarakat)
@@ -251,7 +257,8 @@ flowchart TD
 flowchart TD
     C1([MULAI]) --> C2[/"MASUKAN: address wallet RS yang ingin dicek"/]
     C2 --> C3["getRoomStatus address — view function, tanpa gas"]
-    C3 --> C4["Baca RoomInfo dari mapping on-chain"]
+    C3 --> CDB[("Baca dari Blockchain")]
+    CDB --> C4["Baca RoomInfo dari mapping on-chain"]
     C4 --> C5["Hitung: isFull = availableRooms == 0"]
     C5 --> C6[/"KELUARAN: nama, totalRooms, availableRooms, isFull, lastUpdated"/]
     C6 --> C7["Tampilkan badge: TERSEDIA atau PENUH"]
@@ -265,6 +272,7 @@ flowchart TD
     style C7 fill:#0369a1,color:#fff,stroke:#075985
     style C2 fill:#b45309,color:#fff,stroke:#92400e
     style C6 fill:#b45309,color:#fff,stroke:#92400e
+    style CDB fill:#0f172a,color:#facc15,stroke:#facc15,stroke-width:3px
 ```
 
 #### 5. Diagram Alir — getAllHospitals dan totalHospitals (Publik)
@@ -273,7 +281,8 @@ flowchart TD
 flowchart TD
     D1([MULAI]) --> D2[/"MASUKAN: permintaan dari frontend atau browser"/]
     D2 --> D3["getAllHospitals — view, return address array semua RS"]
-    D3 --> D4["totalHospitals — view, return uint256 jumlah RS"]
+    D3 --> DDB[("Baca dari Blockchain")]
+    DDB --> D4["totalHospitals — view, return uint256 jumlah RS"]
     D4 --> D5[/"KELUARAN: array address RS, jumlah total RS"/]
     D5 --> D6["Tampilkan daftar RS di dashboard publik"]
     D6 --> D7([SELESAI])
@@ -285,6 +294,7 @@ flowchart TD
     style D6 fill:#0369a1,color:#fff,stroke:#075985
     style D2 fill:#b45309,color:#fff,stroke:#92400e
     style D5 fill:#b45309,color:#fff,stroke:#92400e
+    style DDB fill:#0f172a,color:#facc15,stroke:#facc15,stroke-width:3px
 ```
 
 > **Keterangan Simbol Flowchart:**
@@ -292,6 +302,7 @@ flowchart TD
 > - **Jajar Genjang `[/".../"]`** = MASUKAN / KELUARAN (I/O) — warna oranye
 > - **Persegi Panjang `["..."]`** = PROSES (Process) — warna biru
 > - **Belah Ketupat `{"..."}`** = KEPUTUSAN (Decision) — warna ungu
+> - **Silinder `[("...")]`** = PENYIMPANAN BLOCKCHAIN (Database/Storage) — warna hitam + kuning
 > - **Kotak Merah** = REVERT / Ditolak (Error Path) — warna merah
 
 ---
