@@ -179,18 +179,18 @@ flowchart TD
     ADB --> A8[/"KELUARAN: emit HospitalAdded, isRegistered = true"/]
     A8 --> A9([SELESAI])
 
-    style A1 fill:#000,color:#fff,stroke:#000
-    style A9 fill:#000,color:#fff,stroke:#000
-    style AR1 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style AR2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A5 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A4 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A6 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A7 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style A8 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style ADB fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    style A1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A9 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style AR1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style AR2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A5 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A4 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A6 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A7 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style A8 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style ADB fill:none,color:#000,stroke:#000,stroke-width:2px
 ```
 
 #### 2. Diagram Alir — removeHospital (Admin Pusat)
@@ -207,16 +207,16 @@ flowchart TD
     RDB --> R6[/"KELUARAN: emit HospitalRemoved, akses RS dicabut"/]
     R6 --> R7([SELESAI])
 
-    style R1 fill:#000,color:#fff,stroke:#000
-    style R7 fill:#000,color:#fff,stroke:#000
-    style RR1 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style RR2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style R3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style R4 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style R5 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style R2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style R6 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style RDB fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    style R1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R7 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style RR1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style RR2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R4 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R5 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style R6 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style RDB fill:none,color:#000,stroke:#000,stroke-width:2px
 ```
 
 #### 3. Diagram Alir — updateRoomStatus (Staf Rumah Sakit)
@@ -236,19 +236,19 @@ flowchart TD
     BDB --> B8[/"KELUARAN: emit RoomStatusUpdated, data kamar diperbarui"/]
     B8 --> B9([SELESAI])
 
-    style B1 fill:#000,color:#fff,stroke:#000
-    style B9 fill:#000,color:#fff,stroke:#000
-    style BR1 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style BR2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style BR3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B4 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B5 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B6 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B7 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style B8 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style BDB fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    style B1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B9 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style BR1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style BR2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style BR3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B4 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B5 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B6 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B7 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style B8 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style BDB fill:none,color:#000,stroke:#000,stroke-width:2px
 ```
 
 #### 4. Diagram Alir — getRoomStatus (Pasien / Masyarakat)
@@ -264,15 +264,15 @@ flowchart TD
     C6 --> C7["Tampilkan badge: TERSEDIA atau PENUH"]
     C7 --> C8([SELESAI])
 
-    style C1 fill:#000,color:#fff,stroke:#000
-    style C8 fill:#000,color:#fff,stroke:#000
-    style C3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style C4 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style C5 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style C7 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style C2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style C6 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style CDB fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    style C1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C8 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C4 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C5 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C7 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style C6 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style CDB fill:none,color:#000,stroke:#000,stroke-width:2px
 ```
 
 #### 5. Diagram Alir — getAllHospitals dan totalHospitals (Publik)
@@ -287,23 +287,23 @@ flowchart TD
     D5 --> D6["Tampilkan daftar RS di dashboard publik"]
     D6 --> D7([SELESAI])
 
-    style D1 fill:#000,color:#fff,stroke:#000
-    style D7 fill:#000,color:#fff,stroke:#000
-    style D3 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style D4 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style D6 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style D2 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style D5 fill:#fff,color:#000,stroke:#000,stroke-width:2px
-    style DDB fill:#000,color:#fff,stroke:#000,stroke-width:3px
+    style D1 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D7 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D3 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D4 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D6 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D2 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style D5 fill:none,color:#000,stroke:#000,stroke-width:2px
+    style DDB fill:none,color:#000,stroke:#000,stroke-width:2px
 ```
 
 > **Keterangan Simbol Flowchart:**
-> - **Oval `([...])`** = MULAI / SELESAI (Terminator) — hitam, tulisan putih
-> - **Jajar Genjang `[/".../"]`** = MASUKAN / KELUARAN (I/O) — putih, tulisan hitam
-> - **Persegi Panjang `["..."]`** = PROSES (Process) — putih, tulisan hitam
-> - **Belah Ketupat `{"..."}`** = KEPUTUSAN (Decision) — putih, tulisan hitam
-> - **Silinder `[("...")]`** = PENYIMPANAN BLOCKCHAIN (Database/Storage) — hitam, tulisan putih
-> - **Kotak REVERT** = REVERT / Ditolak (Error Path) — putih, tulisan hitam
+> - **Oval `([...])`** = MULAI / SELESAI (Terminator)
+> - **Jajar Genjang `[/".../"]`** = MASUKAN / KELUARAN (I/O)
+> - **Persegi Panjang `["..."]`** = PROSES (Process)
+> - **Belah Ketupat `{"..."}`** = KEPUTUSAN (Decision)
+> - **Silinder `[("...")]`** = PENYIMPANAN BLOCKCHAIN (Database/Storage)
+> - **Kotak REVERT** = REVERT / Ditolak (Error Path)
 
 ---
 
